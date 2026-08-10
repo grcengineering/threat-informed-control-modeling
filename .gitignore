@@ -1,0 +1,4 @@
+# Local render / scratch
+*.svg
+.DS_Store
+node_modules/
