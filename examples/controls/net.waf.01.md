@@ -12,6 +12,7 @@
 | Title | WAF protecting `app.example.com` |
 | Role | **Direct** (FAIR-CAM Loss Event Control — it sits on the traffic-bearing boundary) |
 | Function tags | **Deny + Detect** (§4) |
+| Risk Source | **Adversarial** (default, unlabeled in the signature per notation — §5); a minor **Accidental** angle also applies — the same ruleset that denies an exploit also rejects malformed requests from misconfigured legitimate clients |
 | Disposition | **Tax** on the customer path; **predicted Distort** on the launch path if the exception ramp is removed (§6) |
 | Signature | *Direct · Deny+Detect · Tax* |
 | Maturity | Production |
@@ -98,7 +99,7 @@ flowchart LR
 ## 6. Disposition Analysis (Objective-Path Analysis)
 
 You cannot assign a Disposition without first enumerating the objective flows
-this boundary intersects (framework §5). One label per path, one bearing
+this boundary intersects (framework §6). One label per path, one bearing
 population, one observable.
 
 | Objective path | Bearing population | Disposition | Observable |
@@ -143,7 +144,7 @@ flowchart LR
     style surface fill:#f9ebb9,stroke:#fb9400,stroke-width:2px,color:#000000
 ```
 
-**Distortion decays Coverage** (framework §7). The rerouted launch flow has left
+**Distortion decays Coverage** (framework §8). The rerouted launch flow has left
 the enforcement boundary, so it now runs outside this control's boundary, unmanaged
 by it, and unknown until someone re-enumerates the paths — invisible to the WAF's
 Deny *and* Detect (where the control carries a Detect function). It is the same
@@ -283,7 +284,7 @@ origin-disclosure path (§8) was accounted for at all.
 | EB-1 | Allowlists only egress ranges | Firewall rule export |
 
 **11.3 Operating effectively (continuous).** TICM sharpens this past the audit
-sense (framework §8): it must be **adversary-emulation-validated** *and*
+sense (framework §9): it must be **adversary-emulation-validated** *and*
 **Operating without Distortion**.
 
 | Dep ID / signal | Monitoring Signal | Alert Condition |

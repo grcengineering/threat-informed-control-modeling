@@ -28,7 +28,7 @@ Disclosure, Unawareness, Non-compliance).
 
 **What TICM borrows.** The data-flow-diagram discipline and the trust-boundary
 convention come straight from STRIDE — TICM's §2 Threat Model diagram *is* a
-STRIDE-style DFD, and the control-bypass threat model (§7) reuses the same
+STRIDE-style DFD, and the control-bypass threat model (§8) reuses the same
 diagramming grammar with the control itself as the asset under attack. TICM also
 inherits STRIDE's core instinct that you enumerate before you assert.
 
@@ -109,6 +109,39 @@ Rightsizing **verdict** rather than a number. They compose; they do not compete 
 FAIR-CAM gains a threat-anchored, objective-aware design front-end, and TICM gets
 its quantitative ceiling.
 
+## NIST SP 800-30
+
+**What it is.** NIST Special Publication 800-30 Revision 1, *Guide for
+Conducting Risk Assessments* (September 2012), is the federal risk-assessment
+methodology. Its Appendix D catalogs threat sources into four categories —
+adversarial, accidental, structural, and environmental — as one classification
+step inside a broader, organization-wide risk-assessment process.
+
+**What TICM borrows.** The **Risk Source taxonomy**, adopted and credited:
+Adversarial / Accidental / Structural / Environmental
+([`01-framework.md`](./01-framework.md) §5). This traces to NIST SP 800-30
+Rev. 1 (<https://csrc.nist.gov/pubs/sp/800/30/r1/final>), corroborated across
+independent secondary sources describing its Appendix D taxonomy — the primary
+PDF could not be directly rendered this session, which is disclosed rather
+than papered over. **One honest extension, not wholesale:** NIST scopes
+Structural to *technical*-system failure (hardware aging, resource
+depletion); TICM deliberately broadens it to organizational systems
+drifting from their designed state — see [`08-risk-source.md`](./08-risk-source.md)
+for the full statement of the gap. The other three categories, and the
+overall four-way split, are unchanged from NIST.
+
+**What TICM adds.** SP 800-30 uses the four-category taxonomy as a single
+classification step inside a linear, organization-wide risk-assessment
+process — identify threat sources, identify threat events, assess likelihood,
+assess impact, determine risk. It never attaches the taxonomy to an individual
+control, and it has no notion of Function, Role, or Disposition. TICM lifts
+the taxonomy out of that process and makes it a **first-class, per-control
+axis**, crossed with Function, Role, and Disposition on every control — not a
+one-time assessment step for the organization as a whole. That's the
+difference between "an access review defends against entitlement drift"
+sitting in a risk-assessment report and being a queryable field on the
+control's model: `Sustaining · Identify(Structural) · Neutral`.
+
 ## Attack-Defense Trees
 
 **What it is.** A formal method extending attack trees with interleaved defense
@@ -118,7 +151,7 @@ tree.
 
 **What TICM borrows.** The commitment to modeling attack and defense *together in
 one structure* rather than in separate documents. TICM's insistence that you
-enumerate attack paths (§8 Coverage) alongside the control that sits on them
+enumerate attack paths (framework §7 Coverage) alongside the control that sits on them
 shares this spirit, and TICM's Force ledger (Efficacy, Coverage,
 Bypass-resistance) is comfortable consuming the kind of cost/probability
 weighting ADTrees formalize.
@@ -139,7 +172,7 @@ Critical Security Controls, ISO/IEC 27001 Annex A.
 
 **What TICM borrows.** SOC 2's **assurance triad** — Designed / Implemented /
 Operating effectively — is adopted directly and openly as TICM's Assurance spine
-(§8); TICM only sharpens "Operating" to demand adversary-emulation validation and
+(§9); TICM only sharpens "Operating" to demand adversary-emulation validation and
 a Coupling-Law (no-Distortion) check. TICM also uses these catalogs the way they
 are good: as the **framework-mapping** target (template §12), so a TICM control
 model crosswalks to the compliance IDs an auditor expects.
@@ -176,7 +209,7 @@ shadow security, and the behavioral half of the **Coupling Law** — friction
 provokes workarounds, workarounds leave the sanctioned path — is exactly what this
 literature has described for over fifteen years. TICM did not discover that people
 route around costly controls; the compliance budget did. The Distortion-pressure
-signal in the Drag ledger (§6) is a compliance-budget reading by another name.
+signal in the Drag ledger (§7) is a compliance-budget reading by another name.
 This is the largest single debt on the *organization-facing* side of TICM, the way
 FAIR-CAM is the largest on the control-type side.
 
@@ -212,6 +245,7 @@ attacker alone.
 | **MITRE D3FEND** | Via ATT&CK crosswalk | Yes (technique catalog) | No | No | No (catalog) |
 | **Kill-chain CoA** | Yes (staging) | Yes (verb set) | No | No | No |
 | **FAIR-CAM** | Threat-agnostic | Yes (by domain) | Partial (drag as cost) | **Yes** (Variance/Decision) | Measurement, not design |
+| **NIST SP 800-30** | Yes (threat-source taxonomy) | No | No | No | No (assessment step) |
 | **Attack-Defense Trees** | Yes | Yes (countermeasures) | No (defender budget only) | No | Per-goal, not per-control |
 | **Control catalogs (SOC 2/CSF/CIS/ISO)** | No | No | No | Partial (governance categories) | No (assertion) |
 | **Usable security / econ (Sasse, Herley; SABSA)** | No (studies users) | No | **Descriptive** (population-scale) | No | No (phenomenon-level) |
@@ -235,10 +269,11 @@ threat — an adversary-side kind error) and **Misfit** (right Function and
 sufficient Force, but a material, unmitigated Distort disqualifies it — the
 organization-side kind error), the finding that a control can pass every efficacy
 test and still be the wrong control. Everything else — the DFDs, the defensive
-verb set, the three control Roles, the Prevent/Identify/Correct triads, the
-Designed/Implemented/Operating spine — is credited to STRIDE, D3FEND, the kill
-chain, FAIR-CAM, and SOC 2 respectively; the behavioral observation behind Distort
-is credited to the usable-security tradition (Sasse, Herley, and kin). The
+verb set, the three control Roles, the four Risk Sources, the
+Prevent/Identify/Correct triads, the Designed/Implemented/Operating spine — is
+credited to STRIDE, D3FEND, the kill chain, FAIR-CAM, NIST SP 800-30, and SOC 2
+respectively; the behavioral observation behind Distort is credited to the
+usable-security tradition (Sasse, Herley, and kin). The
 defensible novelty is narrow and precise: **no prior control-modeling method made
 a control's organizational objective-effect a first-class, per-control, generative
 part of the model.** Naming the debts is the point — a control-modeling method
@@ -250,6 +285,8 @@ that hid its borrowings would fail its own honesty test.
 - MITRE D3FEND (d3fend.mitre.org); MITRE ATT&CK (attack.mitre.org).
 - Lockheed Martin, *Cyber Kill Chain* and Courses-of-Action matrix.
 - FAIR Institute, *FAIR Controls Analytics Model (FAIR-CAM) V1.0*, January 2025.
+- NIST, *Special Publication 800-30 Revision 1: Guide for Conducting Risk
+  Assessments* (September 2012) — <https://csrc.nist.gov/pubs/sp/800/30/r1/final>.
 - Kordy et al., *Attack-Defense Trees* (foundational ADTree literature).
 - AICPA SOC 2 Trust Services Criteria; NIST Cybersecurity Framework; CIS Critical
   Security Controls v8; ISO/IEC 27001 Annex A.

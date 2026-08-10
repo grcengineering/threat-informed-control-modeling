@@ -39,7 +39,7 @@ Top findings: `<one line each, most severe first>`.
 | Undersized | `<n>` | |
 | Miscast | `<n>` | Wrong Function for the threat — an adversary-side kind error. |
 | Misfit | `<n>` | Right Function and sufficient Force, but a material, unmitigated Distort/Block makes it net-negative — an organization-side kind error. |
-| **Distort/Block vetoes (§8)** | `<n>` | Any veto here blocks sign-off regardless of Function strength — it renders the control **Misfit**. |
+| **Distort/Block vetoes (§8)** | `<n>` | Any veto here blocks sign-off either way (framework §7 hard gate 2) — **Misfit** if the Distort/Block is what caused the Force shortfall, **Undersized** with the veto logged as an independent finding if Force was already weak for an unrelated reason. |
 
 ## 2. System & Enforcement Boundaries
 
@@ -78,7 +78,7 @@ flowchart LR
 
 ## 4. Objective Paths in Scope
 
-> Objective-Path Analysis (§5). You cannot assign a Disposition without first
+> Objective-Path Analysis (framework §6). You cannot assign a Disposition without first
 > enumerating the organization's objective flows the way the threat model
 > enumerates attack paths. Each path gets a *named bearing population*, not a
 > global label.
@@ -94,15 +94,20 @@ flowchart LR
 > are the seven adversary Functions (Deny · Degrade · Detect · Deceive · Contain ·
 > Evict · Restore) for Direct controls — join multiples with `+` (e.g. `Deny+Detect`),
 > never `/` — or the Prevent / Identify / Correct triad for Sustaining (variance)
-> and Informing (misalignment) controls. **Disposition** is
-> *per objective path* — Enable / Neutral / Tax / Distort / Block — never one
+> and Informing (misalignment) controls. **Risk Source(s)** names *who or what
+> causes* the harm each signature addresses — Adversarial / Accidental /
+> Structural / Environmental, closed set, §5 of the framework spec. Adversarial
+> is TICM's implicit default and stays unlabeled (leave the cell blank); name
+> any non-adversarial source explicitly, e.g. `Structural`. A control can claim
+> more than one Risk Source — name only what it genuinely covers. **Disposition**
+> is *per objective path* — Enable / Neutral / Tax / Distort / Block — never one
 > global tag. **Assurance** is Designed / Implemented / Operating.
 
-| Control ID | Control | Role | Function(s) | Disposition (per path) | Assurance state |
-|---|---|---|---|---|---|
-| C-1 | `<name>` | Direct | `<e.g. Deny+Detect @ T-1>` | `<OP-1: Tax; OP-2: Enable>` | Designed ✔ / Impl ✔ / Op ✖ |
-| C-2 | | Sustaining | `<e.g. Identify (variance)>` | | |
-| C-3 | | Informing | `<e.g. Prevent (misalignment)>` | | |
+| Control ID | Control | Role | Function(s) | Risk Source(s) | Disposition (per path) | Assurance state |
+|---|---|---|---|---|---|---|
+| C-1 | `<name>` | Direct | `<e.g. Deny+Detect @ T-1>` | `<blank = Adversarial (default)>` | `<OP-1: Tax; OP-2: Enable>` | Designed ✔ / Impl ✔ / Op ✖ |
+| C-2 | | Sustaining | `<e.g. Identify (variance)>` | `<e.g. Structural>` | | |
+| C-3 | | Informing | `<e.g. Prevent (misalignment)>` | `<e.g. Accidental>` | | |
 
 ## 6. Coverage Matrix
 
@@ -135,17 +140,49 @@ flowchart LR
     style c1 fill:#9ecea2,stroke:#015407,stroke-width:2px,color:#000000
 ```
 
+### 6.1 Adversarial vs. non-adversarial coverage
+
+> The coverage matrix above answers *"is this threat covered?"* This subsection
+> asks the question most control inventories never ask explicitly: **do we have
+> adversarial coverage *and* non-adversarial coverage on this asset, or only the
+> kind of "security" that implies an attacker?** (§5 of the framework spec.) Most
+> control inventories default to adversary-only the same way TICM's Function
+> axis originally did — re-read the Risk Source(s) column from §5 above alongside
+> this matrix and mark, per asset or objective path, whether each of the four
+> Risk Sources has a control claiming it at all, independent of whether that
+> control also shows up in the threat-coverage matrix above.
+
+| Asset / objective path | Adversarial | Accidental | Structural | Environmental |
+|---|---|---|---|---|
+| `<e.g. checkout DB>` | covered (C-1) | gap | claimed (C-2) | gap |
+| OP-2 | | | | |
+
+- **Gap** — no control anywhere in the inventory claims this Risk Source for this
+  asset or path. An all-Adversarial row with three gaps next to it is the exact
+  pattern §5 names: security that only ever imagined an attacker.
+- **Claimed** — a control's signature names this Risk Source but its Operating
+  tier (§10 of the control model) hasn't been validated against the matching
+  falsification evidence — injected-error, injected-drift, or DR-drill, per §5 —
+  rather than emulated attack.
+- Read a **Structural** gap next to a Sustaining control column in §5 as a
+  strong signal: Sustaining controls exist to manage variance, and variance is
+  *typically* Structural (though a Sustaining control can also be watching for
+  Adversarial tampering) — a Structural gap next to no Sustaining coverage
+  usually means no Sustaining/Identify control is watching this asset at all.
+
 ## 7. Findings
 
 > One row per finding, most severe first. `type` is one of: **gap** (uncovered
 > threat), **oversized**, **undersized**, **miscast** (wrong Function for the
 > threat — an adversary-side kind error), **misfit** (right Function and sufficient
 > Force, but a material, unmitigated Distort/Block makes deploying it net-negative —
-> the organization-side kind error a distort-veto produces), **distort-veto** (a
-> material, unmitigated Distort or Block on a revenue-critical objective path — an
-> automatic deployment veto per §6, and the trigger that renders a control
-> **misfit**), or **drift** (a control that was Operating and no longer is). Every
-> finding cites evidence; assertions without evidence are not findings.
+> the organization-side kind error), **distort-veto** (a material, unmitigated
+> Distort or Block on a revenue-critical objective path — an automatic deployment
+> veto per framework §7 hard gate 2, landing as **misfit** when the Distort/Block IS
+> the Force shortfall, or as **undersized** with the veto logged as an independent
+> finding when Force is separately weak), or **drift** (a control that was Operating
+> and no longer is). Every finding cites evidence; assertions without evidence are
+> not findings.
 
 | Finding ID | Type | Control / path | Evidence | Severity |
 |---|---|---|---|---|
@@ -156,7 +193,7 @@ flowchart LR
 
 ## 8. Coupling-Law / Distortion Findings
 
-> The Coupling Law (§7): **Distortion decays Coverage.** Every Distort disposition
+> The Coupling Law (§8): **Distortion decays Coverage.** Every Distort disposition
 > spawns circumvention; every circumvention is a legitimate flow that has left the
 > enforcement boundary and become new, unmonitored attack surface. So a control's
 > organization-facing failure erodes its own adversary-facing Coverage — and the

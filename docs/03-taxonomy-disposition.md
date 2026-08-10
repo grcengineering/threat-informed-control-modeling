@@ -2,7 +2,7 @@
 
 > Deep reference for TICM's signature contribution: the **Disposition** axis — what
 > a control does to the *organization*. The canonical definitions live in
-> [`01-framework.md`](./01-framework.md) §5; this document is the practitioner's
+> [`01-framework.md`](./01-framework.md) §6; this document is the practitioner's
 > field guide to applying them. If anything here conflicts with the framework
 > spec, the spec wins.
 
@@ -15,8 +15,8 @@ control* — and TICM is the first method that lets you say so in the model inst
 of discovering it in a breach retro.
 
 Return to the one idea: **a control is a classifier** ([`01-framework.md`](./01-framework.md) §1).
-The Function axis measures its false negatives (hostile crossings it let through
-— bypasses). The Disposition axis measures its **false positives**: legitimate
+The Function axis measures its false negatives (harmful crossings it let through
+— bypasses, whatever their Risk Source). The Disposition axis measures its **false positives**: legitimate
 events it interfered with that it shouldn't have. Disposition is just the honest
 name for how bad those false positives are for the business, sorted into five
 categorical mechanisms — not a severity dial.
@@ -29,6 +29,18 @@ Two rules govern every rating, and they are the two most common mistakes:
 2. **A Disposition is a *kind*, not a score.** You do not rate friction 1–10 and
    bucket it. You ask a behavioral question — *did people route around it?* — and
    the answer names the kind.
+
+> **Disposition is orthogonal to Risk Source.** Disposition measures what a
+> control costs the *organization*; Risk Source ([`01-framework.md`](./01-framework.md) §5)
+> names what kind of harm the control is defending against — an attacker, an
+> honest mistake, drift, or a disaster. Those are independent questions, and the
+> cost doesn't change depending on which one you're answering. Access
+> recertification is a **Tax** on manager time whether you frame its threat as an
+> attacker exploiting a stale credential (Adversarial) or as entitlements quietly
+> drifting from role as people change jobs (Structural) — same twenty minutes per
+> quarter, same population, same Disposition. Assess the cost the same way
+> regardless of which Risk Source you're modeling; the two axes combine freely,
+> like every pair of TICM's four lenses.
 
 ## The five dispositions
 
@@ -66,7 +78,7 @@ named subtypes:
 - **Resilience** — the control *restores* the objective flow after disruption.
   Backups, failover, replication. This is deliberately where Evict's aftermath
   lands: Evict removes the adversary (a Function), but *restoring the service* is
-  an organizational effect and lives here ([`01-framework.md`](./01-framework.md) §4, §5).
+  an organizational effect and lives here ([`01-framework.md`](./01-framework.md) §4, §6).
 
 **Boundary test vs Neutral.** Enable requires an objective flow that moved in the
 *positive* direction and you can point at it. If nothing measurably improved, it
@@ -127,7 +139,7 @@ through. A change-approval step that adds a day but is always used.
 **Measured by.** The magnitude, per path, per population, with real numbers:
 "~6 min/deploy × ~200 deploys/week borne by the 40-person platform team." That
 quantity feeds the **Friction** dimension of the Drag ledger in Rightsizing
-([`01-framework.md`](./01-framework.md) §6). A Tax is survivable and often correct;
+([`01-framework.md`](./01-framework.md) §7). A Tax is survivable and often correct;
 it just has to be *counted*.
 
 ### Distort — the load-bearing category
@@ -182,8 +194,8 @@ flowchart LR
 pattern exists, observed or confidently predicted — is a separate act from *vetoing*
 the control over it. The pattern's existence is what earns the Distort tag and its
 mandatory control-bypass entry (below); it does not, by itself, stop the deploy. The
-hard consequences — the deploy veto ([`01-framework.md`](./01-framework.md) §6) and
-the Operating-without-Distortion assurance failure ([`01-framework.md`](./01-framework.md) §8) —
+hard consequences — the deploy veto ([`01-framework.md`](./01-framework.md) §7) and
+the Operating-without-Distortion assurance failure ([`01-framework.md`](./01-framework.md) §9) —
 fire only on a **material, unmitigated** Distort: *material* = circumvention above a
 stated threshold on a path that matters; *unmitigated* = no exit ramp (Tunability)
 **and** no Sustaining control catching and correcting the drift. A **managed** Distort
@@ -194,7 +206,7 @@ whether it's bad enough to stop you.
 
 **The Coupling Law rule.** This is why Distort is a *security* concern and not a UX
 footnote: **every Distort rating auto-generates an entry in the control-bypass
-threat model** ([`01-framework.md`](./01-framework.md) §7). The logic is exact in
+threat model** ([`01-framework.md`](./01-framework.md) §9). The logic is exact in
 the classifier framing — a false positive severe enough to provoke a workaround
 *removes that flow from the population the classifier sees.* It can never show up
 as a false positive again; it has become a false negative somewhere else — outside
@@ -221,9 +233,10 @@ You measure it from route-around telemetry (unsanctioned SaaS spend, exception-q
 growth, shared-credential usage, egress to personal endpoints) or, before deploy,
 predict it from the ratio of friction to the population's deadline pressure. A
 **material, unmitigated** Distort or Block on a revenue-critical path is a **deploy
-veto** ([`01-framework.md`](./01-framework.md) §6) — it makes the control's
-Rightsizing verdict **Misfit** (right Function and sufficient Force against the
-threat, but net-negative for the business), no matter how strong the Function.
+veto** ([`01-framework.md`](./01-framework.md) §7) — the control does not ship as-is
+either way, landing as **Misfit** (right Function, sufficient Force, but net-negative
+for the business) when the Distort *is* the Force failure, or **Undersized** with the
+Distort logged as an independent finding when Force is separately weak.
 
 ### Block
 
@@ -322,7 +335,8 @@ fix, and only Objective-Path Analysis gets you there.
 
 ## References
 
-- [`01-framework.md`](./01-framework.md) — canonical spec (§5 Disposition, §7 Coupling Law)
-- [`02-taxonomy-function.md`](./02-taxonomy-function.md) — the adversary-facing axis
+- [`01-framework.md`](./01-framework.md) — canonical spec (§6 Disposition, §8 Coupling Law)
+- [`02-taxonomy-function.md`](./02-taxonomy-function.md) — what the control does about the harm
+- [`08-risk-source.md`](./08-risk-source.md) — who or what causes it (orthogonal to Disposition)
 - [`04-rightsizing.md`](./04-rightsizing.md) — how Disposition feeds the Drag ledger and the deploy vetoes
 - [`../templates/control-model-template.md`](../templates/control-model-template.md) — where Distort entries land (§8) in the bypass threat model

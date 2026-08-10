@@ -82,7 +82,28 @@ Degrade, not Deny. Respect the boundary rules: a sensor that also blocks is two
 tags; a detection nobody triages is a log, not a Detect. Write the test, not just
 the label — the test is what makes step 8 possible.
 
-**Alternate-evidence tier.** Some controls can't be adversary-emulated —
+**Risk Source.** A falsification test is a claim about stopping *something
+harmful* — name what kind. Per the framework's fourth lens
+(`docs/01-framework.md` §5; full mapping and worked examples in
+[`../docs/08-risk-source.md`](../docs/08-risk-source.md)), every control claims
+one or more of four Risk Sources, closed set: **Adversarial** (an intentional
+actor exploiting a vulnerability), **Accidental** (an authorized person's
+honest mistake), **Structural** (a system — technical or organizational —
+drifting or degrading on its own), **Environmental** (forces outside anyone's
+control). Adversarial has been TICM's implicit default from the start and stays
+unlabeled in the signature (`Direct Deny/Tax`); name the other three explicitly
+(`Sustaining Identify(Structural)/Neutral`). MFA against T1078 needs no label —
+Adversarial by default. A DB constraint that rejects a query with no `WHERE`
+clause is also **Deny** — same Function — but the harm it denies is
+**Accidental**, and its falsification test is an injected-error scenario, not an
+emulated attack. A control can claim more than one Risk Source; name only what
+it genuinely covers. Get this right here: it decides which falsification-evidence
+type the Efficacy score (step 7) and the Operating assertion (step 8) hold the
+control to — emulated attack for Adversarial, the alternate-evidence tier below
+for the other three.
+
+**Alternate-evidence tier.** Some controls — usually the ones whose Risk Source
+above is Accidental, Structural, or Environmental — can't be adversary-emulated:
 administrative and procedural mechanisms (background checks, segregation of
 duties, vendor security clauses) and most Informing controls have no attack to
 emulate. These are *not* auto-scored 0 Force for "never emulated." Their Efficacy
@@ -235,6 +256,10 @@ Before you publish the model, it must clear all of these:
 - [ ] **Role assigned first**, and it dictates the Function sub-taxonomy used.
 - [ ] Every **Function tag** carries a falsification test naming an emulated
       attack — no bare labels.
+- [ ] Every control names its **Risk Source(s)** — Adversarial (unlabeled
+      default) or Accidental / Structural / Environmental (named explicitly),
+      per `docs/01-framework.md` §5 — and it matches the falsification-evidence
+      type used above.
 - [ ] Dispositions assigned **per objective path, per named population** — never
       one global label; Neutral is earned by enumeration.
 - [ ] Dependency schema split into **Enablement / Routing / Enforcement-boundary**,

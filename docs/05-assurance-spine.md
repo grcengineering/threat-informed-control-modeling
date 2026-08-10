@@ -1,9 +1,9 @@
 # The Assurance Spine and the Control-Bypass Model
 
-> Categorization ([§4](./01-framework.md), [§5](./01-framework.md)) and rightsizing
-> ([§6](./01-framework.md)) describe a control *as intended*. This document is
+> Categorization ([§4](./01-framework.md), [§6](./01-framework.md)) and rightsizing
+> ([§7](./01-framework.md)) describe a control *as intended*. This document is
 > about whether it's *real* — and about the fact that the control is itself an
-> asset with an attack surface. It expands [§8 of the framework](./01-framework.md)
+> asset with an attack surface. It expands [§9 of the framework](./01-framework.md)
 > and drives the checkable sections of the
 > [control template](../templates/control-model-template.md).
 
@@ -21,7 +21,7 @@ web application**, protecting the origin from injection and exploitation traffic
 
 TICM borrows the auditor's triad wholesale. This is openly **SOC 2's** language
 (the trust-services criteria distinguish a control's design from its operating
-effectiveness), not a TICM invention — see [§9's honesty ledger](./01-framework.md).
+effectiveness), not a TICM invention — see [§10's honesty ledger](./01-framework.md).
 What TICM adds is (a) grounding each tier in a *specific artifact* tied to the
 dependency schema below, and (b) a hard sharpening of the third tier.
 
@@ -42,16 +42,28 @@ dependency schema below, and (b) a hard sharpening of the third tier.
   it stopped? This is where TICM sharpens SOC 2 past the audit sense, with **two
   requirements the auditor's version doesn't carry**:
 
-  1. **Adversary-emulation-validated.** The [§4 falsification tests](./01-framework.md)
-     must pass against the claimed techniques. For a Deny WAF: an emulated
-     injection attempt against a live path returns a block, *with no defender
-     action required*. Green config is not evidence; a passing emulated attack is.
+  1. **Falsification-validated, evidence matched to Risk Source.** The
+     [§4 falsification tests](./01-framework.md) must pass against the claimed
+     techniques — but *which* test is the right one depends on the control's
+     claimed Risk Source (framework [§5](./01-framework.md); full treatment in
+     [`08-risk-source.md`](./08-risk-source.md)). For a Deny WAF claiming
+     **Adversarial** coverage: an emulated injection attempt against a live path
+     returns a block, *with no defender action required*. A control claiming
+     **Accidental**, **Structural**, or **Environmental** coverage instead is
+     validated the same way, against the falsification test *that* Risk Source
+     defines — an injected-error scenario, an injected-drift scenario, or a
+     DR/continuity drill, respectively — never against an attack emulation that
+     was never the applicable test to begin with. (This is the root cause behind
+     [`04-rightsizing.md`](./04-rightsizing.md)'s alternate-evidence tier: an
+     un-emulatable control usually just has a non-Adversarial Risk Source and was
+     being held to the wrong evidence standard.) Green config is not evidence
+     either way; a passing falsification test of the right kind is.
   2. **Operating without material Distortion.** The trigger is a **material,
      unmitigated** Distort, not any workaround at all. *Material* = circumvention
      above a stated threshold on a path that matters; *unmitigated* = no exit ramp
      (Tunability) **and** no Sustaining control catching and correcting the drift.
      A control carrying a material, unmitigated Distort is failing its
-     [Coupling-Law check (§7)](./01-framework.md) — legitimate flow has left the
+     [Coupling-Law check (§8)](./01-framework.md) — legitimate flow has left the
      enforcement boundary, so the control's real coverage has decayed. **Such a
      control is not operating effectively, however green its dashboard.** A
      *managed* Distort — one with a sanctioned exception ramp and a Sustaining
@@ -130,7 +142,7 @@ finding viewed from two sides.
 Two structural sources feed this model automatically:
 
 - **Every Distort disposition writes a bypass entry.** Per the
-  [Coupling Law (§7)](./01-framework.md), a workaround is new attack surface by
+  [Coupling Law (§8)](./01-framework.md), a workaround is new attack surface by
   definition, so a control rated Distort on any objective path auto-generates a
   bypass path here — the circumvention route *is* the false-negative path.
 - **Pull from a shared catalog by control type.** WAF bypasses (origin exposure,
@@ -168,14 +180,16 @@ section of the control document.
 
 That is the assurance spine in one line: **designed** asks whether the dependency
 graph would close the paths if true; **implemented** asks whether each dependency
-is true now; **operating** asks whether it stays true, proves it with emulated
-attacks, and refuses to call a circumvented control effective — reached by making
-every dependency a live assertion rather than a remembered one.
+is true now; **operating** asks whether it stays true, proves it against the
+falsification test its claimed Risk Source defines, and refuses to call a
+circumvented control effective — reached by making every dependency a live
+assertion rather than a remembered one.
 
 ## References
 
-- [`01-framework.md`](./01-framework.md) — §8 (assurance spine), §3 (Roles), §7 (Coupling Law)
-- [`04-rightsizing.md`](./04-rightsizing.md) — Force/Drag ledger and the four verdicts
+- [`01-framework.md`](./01-framework.md) — §9 (assurance spine), §3 (Roles), §8 (Coupling Law), §5 (Risk Source)
+- [`04-rightsizing.md`](./04-rightsizing.md) — Force/Drag ledger and the five verdicts
+- [`08-risk-source.md`](./08-risk-source.md) — the Risk Source axis: definitions, falsification evidence per source, worked examples
 - [`control-model-template.md`](../templates/control-model-template.md) — §7 dependency schema, §8 bypass model, §10 effectiveness criteria
 
 > **Framework-mapping disclaimer.** Any SOC 2 / ISO / NIST / PCI / CIS control

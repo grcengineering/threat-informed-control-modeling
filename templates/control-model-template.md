@@ -2,10 +2,11 @@
 
 > Fill-in-the-blank control model for **Threat-Informed Control Modeling**. It
 > extends the grcengineering house control template with TICM's four lenses —
-> Role, Function, Disposition, Rightsizing — so a control is modeled as a
-> classifier: what it catches (adversary story) *and* what it costs (business
-> story), told together. Canonical spec: [`../docs/01-framework.md`](../docs/01-framework.md).
-> Delete the italic guidance under each heading as you go; keep the tables.
+> Role, Function, Risk Source, Disposition — plus Rightsizing, so a control is
+> modeled as a classifier: what it catches (adversary or non-adversarial story)
+> *and* what it costs (business story), told together. Canonical spec:
+> [`../docs/01-framework.md`](../docs/01-framework.md). Delete the italic
+> guidance under each heading as you go; keep the tables.
 
 ## Front Matter
 
@@ -15,6 +16,7 @@
 | Title | |
 | **Role** | Direct / Sustaining / Informing *(§3 — what it acts on: the attack graph, another control, or a decision)* |
 | **Function tag(s)** | *Direct: Deny · Degrade · Detect · Deceive · Contain · Evict · Restore. Sustaining/Informing: Prevent · Identify · Correct (§4). Join multiple with `+` (e.g. `Deny+Detect`)* |
+| **Risk Source(s)** | *Adversarial / Accidental / Structural / Environmental — closed set, §5. Adversarial is the unlabeled default (leave blank if that's the only source); name any non-adversarial source explicitly, e.g. `Structural`. A control may claim more than one — name only what it genuinely covers.* |
 | **Disposition(s) per objective path** | *one Disposition per path from §6, e.g. `Tax (deploy-velocity)`, `Enable (audit-assurance)`* |
 | **Rightsizing verdict** | Rightsized / Oversized / Undersized / Miscast / Misfit *(§9)* |
 | Maturity | Draft / Piloted / Production |
@@ -78,7 +80,7 @@ language as §2 so the two read side by side.*
 
 ```mermaid
 flowchart LR
-    src(Legitimate + hostile traffic)
+    src(Legitimate + harmful crossings)
     ctrl(Control / enforcement boundary)
     asset[(Protected asset)]
     resp(Named responder)
@@ -205,15 +207,16 @@ real. Each tier resolves to §7 dependency IDs.*
 | | | |
 
 **Operating effectively —** *does it stay true, and would you know the moment it
-stopped? Requires adversary-emulation validation (the §4 tests pass) **and**
+stopped? Requires validation against the §4 falsification test **and**
 Operating-without-Distortion — no **material, unmitigated** Distort on any §6 path:
 circumvention above a stated threshold on a path that matters, with no exit ramp
 (Tunability) and no Sustaining control catching it. A **managed** Distort (has an
 exception ramp and a Sustaining control) is still Distort — you still write its §8
-bypass entry — but it does not by itself fail this check. Where the §4 test cannot
-be adversary-emulated (administrative/procedural controls), evidence this tier via
-the alternate tier — process audit, historical base-rate data, or design-review
-against the §7 dependency graph — not an auto-fail for "never emulated."*
+bypass entry — but it does not by itself fail this check. The evidence type follows
+the control's claimed **Risk Source** (framework §5): adversary emulation for an
+Adversarial claim; an injected-error, injected-drift, or DR-drill scenario for
+Accidental / Structural / Environmental — matched to what the control actually
+defends against, never an auto-fail for "can't emulate an attack."*
 
 | Dependency ID | Monitoring signal | Alert condition |
 |---|---|---|

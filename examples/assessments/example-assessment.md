@@ -21,9 +21,9 @@
 
 ## 1. Executive Summary
 
-Acme Billing API is a multi-tenant API that lets merchants charge their own end-users. This is a **design-review** run — we rightsize on paper before GA, so the Distort/Block veto is the cheapest lever. Seven controls were signed, and three decisions block a clean sign-off: the edge WAF is **Misfit** — strong Force, but a material, unmitigated `Distort` on the revenue-critical charge path (its only exception mechanism is a standing bypass allowlist that grows one merchant at a time); cross-tenant data access (T-4) has **no control on its authorization boundary** — the worst finding a multi-tenant billing product can carry; and the proposed answer to insider export is **Miscast** — a quarterly access review (a Sustaining drift-detector) aimed at a real-time loss event.
+Acme Billing API is a multi-tenant API that lets merchants charge their own end-users. This is a **design-review** run — we rightsize on paper before GA, so the Distort/Block veto is the cheapest lever. Seven controls were signed, and three decisions block a clean sign-off: the edge WAF is **Misfit** — strong Force, but a material, unmitigated `Distort` on the revenue-critical charge path (its only exception mechanism is a standing bypass allowlist that grows one merchant at a time); cross-tenant data access (T-4) has **no control on its authorization boundary** — the worst finding a multi-tenant billing product can carry; and the proposed answer to insider export is **Miscast** — a quarterly access review (a Sustaining drift-detector) aimed at a real-time loss event, though read by *risk source* rather than by threat it's exactly the right control for that event's root cause (§6.1).
 
-Top findings, worst first: **F-1** WAF **Misfit** — material Distort veto on charge (Critical); **F-2** no control on cross-tenant access (Critical); **F-3** access review Miscast for insider export (High); **F-4** export detection claimed, no triage owner (High); **F-5** the WAF's Coupling-Law shadow path has no Sustaining control (High); **F-6** field-level encryption **Undersized** for the modeled threat, T-3 (Medium).
+Top findings, worst first: **F-1** WAF **Misfit** — material Distort veto on charge (Critical); **F-2** no control on cross-tenant access (Critical); **F-3** access review Miscast for insider export (High); **F-4** export detection claimed, no triage owner (High); **F-5** the WAF's Coupling-Law shadow path has no Sustaining control (High); **F-6** field-level encryption **Undersized** for the modeled threat, T-3 (Medium); **F-7** C-5's own cadence/scope **Undersized** against the Structural drift behind T-3 (Medium).
 
 | Rightsizing verdict | Count | Of note |
 |---|---|---|
@@ -31,7 +31,7 @@ Top findings, worst first: **F-1** WAF **Misfit** — material Distort veto on c
 | Oversized | 0 | none in this inventory |
 | Undersized | 2 | C-4 field-level encryption (Drag paid, no Force on T-3's modeled app-mediated path); C-7 export detection (proposed with no triage consumer) |
 | Miscast | 1 | C-5 access review — right control for entitlement drift, wrong Function for the T-3 loss event |
-| **Misfit** | 1 | **C-1 WAF — strong Force, but a material, unmitigated `Distort` on OP-1 (charge) vetoes deploy (§8). The verdict the deploy-veto produces.** |
+| **Misfit** | 1 | **C-1 WAF — strong Force, but a material, unmitigated `Distort` on OP-1 (charge) vetoes deploy (§7). The verdict the deploy-veto produces.** |
 
 ## 2. System & Enforcement Boundaries
 
@@ -80,7 +80,7 @@ Pulled straight from the consumed threat model — we score controls against the
 
 ## 4. Objective Paths in Scope
 
-Objective-Path Analysis (framework §5). No Disposition is assignable without this — each path gets a named bearing population, not a global label.
+Objective-Path Analysis (framework §6). No Disposition is assignable without this — each path gets a named bearing population, not a global label.
 
 | Objective path | Bearing population | Criticality |
 |---|---|---|
@@ -94,13 +94,15 @@ Role is Direct / Sustaining / Informing. Direct Functions are Deny · Degrade ·
 
 *Assurance shorthand: **pass** = evidenced; **partial** = partially true; **plan** = proposed, not yet built (expected at a pre-launch review); **fail** = claimed but does not hold.*
 
+*Risk Source notation (framework §5): Adversarial is TICM's implicit default and stays unlabeled in the signature; non-adversarial sources are named in the Function tag — e.g. C-5's `Identify(Structural)`, because a quarterly access review's real target is entitlement drift, not an attacker.*
+
 | Control ID | Control | Signature (Role · Function · worst-Disp) | Disposition (per path) | Assurance |
 |---|---|---|---|---|
 | **C-1** | Edge WAF + rate limiting | Direct · Deny+Degrade+Detect @ T-1 · **Distort** | OP-1 **Distort**; OP-3 Tax; OP-2 Neutral | Des pass · Impl pass · Op **fail** |
 | **C-2** | API auth — OAuth2 client-credentials + scoped API keys | Direct · Deny @ T-1, T-2 · **Tax** | OP-1 **Enable** (Assure); OP-3 Tax; OP-2 Neutral | Des pass · Impl pass · Op pass |
 | **C-3** | MFA on internal support/admin console | Direct · Deny+Detect @ T-2 · **Tax** | OP-3 Tax; OP-1/OP-2 Neutral | Des pass · Impl pass · Op pass |
 | **C-4** | Field-level encryption of billing PII at rest | Direct · Degrade @ T-3 (raw-storage-theft variant only) · **Neutral** | Neutral on all three | Des pass · Impl pass · Op pass |
-| **C-5** | Quarterly user-access review | Sustaining · Identify (variance) @ entitlement drift · **Tax** | OP-2/OP-3 Tax (low); OP-1 Neutral | Des **fail** · Impl partial · Op plan |
+| **C-5** | Quarterly user-access review | Sustaining · Identify(Structural) (variance) @ entitlement drift · **Tax** | OP-2/OP-3 Tax (low); OP-1 Neutral | Des **fail** · Impl partial · Op plan |
 | **C-6** | WAF / rate-limit config-drift detection | Sustaining · Identify (variance) @ C-1 · **Neutral** | Neutral on all three | Des pass · Impl plan · Op plan |
 | **C-7** | Bulk-export / egress detection on the console | Direct · Detect @ T-3 · **Neutral** | Neutral on all three | Des partial · Impl plan · Op **fail** |
 
@@ -138,6 +140,38 @@ flowchart LR
     style c1 fill:#9ecea2,stroke:#015407,stroke-width:2px,color:#000000
 ```
 
+### 6.1 Adversarial vs. non-adversarial coverage
+
+The matrix above asks one question per threat: *is it covered?* Most of §3's threats came from an attacker-shaped model, so that question silently assumes the harm is adversarial — the same default the Risk Source axis (framework §5) names and removes. T-5 is the tell: it already had to be modeled as a bespoke, ad hoc exception ("not an attacker technique," §3 notes) for exactly this reason, because there was nowhere else to put "the WAF silently degrades" before Risk Source existed as its own axis. Re-reading the same control inventory by Risk Source instead of by threat asks a second question the threat-only view has no row for: *do we have adversarial coverage* and *non-adversarial coverage* on this boundary, or only the kind of "security" that implies an attacker?
+
+| Enforcement boundary | Adversarial | Accidental | Structural | Environmental |
+|---|---|---|---|---|
+| **API edge** | covered — C-1 (T-1) | gap | covered — C-6 (this is what T-5 was already naming, ad hoc, before Risk Source existed as an axis) | gap |
+| **Export boundary** (console) | **gap** — nothing in the inventory closes the live export (T-3; F-3, F-4, F-6) | gap | **covered — C-5** | gap |
+| **Object-authz boundary** | **gap** — no control at all (T-4; F-2) | gap | gap | gap |
+
+The Export boundary row is where this lens earns its keep. Threat-only, T-3 is one row with one verdict — gap, and the control offered against it is Miscast (F-3). That reads as "C-5 doesn't help here." Split by Risk Source, T-3 is actually two questions the threat-only matrix had folded into one row: *can we catch the export while it's happening* (Adversarial — no, F-3/F-4/F-6 stand unchanged), and *should that account have been able to reach the export function at all* (Structural — the access existed because entitlements had drifted past the role, which is exactly what a quarterly `Identify(Structural)` sweep exists to catch). C-5 is Miscast for the first question and correctly cast for the second, and both are true about the same control at once, because they're answers to different Risk Sources on the same boundary — not competing verdicts. The threat-only matrix had no row for the second question; it was folded into "Miscast" and dropped along with it.
+
+```mermaid
+flowchart LR
+    drift["Entitlement drift (Structural)"]
+    ins("Insider / compromised account")
+    exp{{"Export boundary"}}
+    data[("Tenant billing data + PII")]
+    c5("C-5: quarterly access review")
+    drift -->|"leaves excess bulk-export access uncaught for up to a quarter"| ins
+    ins -->|"exports — T-3, Adversarial"| exp
+    exp -->|"no effective Direct cover (F-3, F-4, F-6)"| data
+    c5 -.->|"Identify(Structural) — the right control for this edge"| drift
+    style drift fill:#f9ebb9,stroke:#fb9400,stroke-width:2px,color:#000000
+    style ins fill:#ff7676,stroke:#940000,stroke-width:2px,color:#000000
+    style exp fill:#f9ebb9,stroke:#fb9400,stroke-width:2px,color:#000000
+    style data fill:#9bb8ff,stroke:#0035b3,stroke-width:2px,color:#000000
+    style c5 fill:#9ecea2,stroke:#015407,stroke-width:2px,color:#000000
+```
+
+That Structural gap has its own fix, distinct from replacing C-5 as the T-3 answer (F-3, P1) — see F-7.
+
 ## 7. Findings
 
 Most severe first. Every finding cites evidence.
@@ -149,11 +183,12 @@ Most severe first. Every finding cites evidence.
 | **F-3** | miscast | C-5 for T-3 | A Sustaining / Identify (variance) control aimed at a Direct real-time loss event. A quarterly cadence can never touch an export in progress — wrong Function for the threat. Fails the "close the T-3 path" design test. | **High** |
 | **F-4** | undersized | C-7 for T-3 | Export/egress detection is proposed but names **no triage consumer**, so its Detect claim fails its falsification test. As proposed it ships alert-noise Drag for null Force. | **High** |
 | **F-5** | gap | C-1 shadow path / Sustaining layer | The bypass allowlist F-1 manufactures sits off the enforcement boundary, and C-6 watches WAF *rule mode*, **not exception-list growth** — so the Coupling-Law decay has no Sustaining Identify control (§8). | **High** |
-| **F-6** | undersized | C-4 (field-level encryption) | C-4 was deployed to address **T-3** (protect billing PII from insider export). FLE Degrades only the raw-storage-theft variant; T-3's *modeled* path is **app-mediated** (data is decrypted through the console), so key-management Drag is paid for **no Force on the modeled threat**. Precedence rule (framework §6): strong against an incidental threat (raw-file theft, which nobody is defending here) + weak against the in-scope modeled threat = **Undersized**, not Oversized. | **Medium** |
+| **F-6** | undersized | C-4 (field-level encryption) | C-4 was deployed to address **T-3** (protect billing PII from insider export). FLE Degrades only the raw-storage-theft variant; T-3's *modeled* path is **app-mediated** (data is decrypted through the console), so key-management Drag is paid for **no Force on the modeled threat**. Precedence rule (framework §7): strong against an incidental threat (raw-file theft, which nobody is defending here) + weak against the in-scope modeled threat = **Undersized**, not Oversized. | **Medium** |
+| **F-7** | undersized | C-5 — Structural read (not the T-3/F-3 read) | Scored against C-5's own correctly-cast risk source (§6.1), not the T-3/Adversarial read F-3 already covers: quarterly cadence, unweighted by access sensitivity, leaves excess bulk-export access uncaught for up to a quarter — the same window T-3 exploits. | **Medium** |
 
 ## 8. Coupling-Law / Distortion Findings
 
-The Coupling Law (framework §7): **Distortion decays Coverage.** Every Distort spawns circumvention, and every circumvention is a legitimate flow that has **left the enforcement boundary** — now outside this control's boundary, unmanaged by it, and unknown until the paths are re-enumerated (defense-in-depth may still cover it; *this* control no longer does, and — where it carries a Detect function — can no longer even see it). So C-1's measured Coverage on **T-1** is already stale for every merchant on the OP-1 bypass list.
+The Coupling Law (framework §8): **Distortion decays Coverage.** Every Distort spawns circumvention, and every circumvention is a legitimate flow that has **left the enforcement boundary** — now outside this control's boundary, unmanaged by it, and unknown until the paths are re-enumerated (defense-in-depth may still cover it; *this* control no longer does, and — where it carries a Detect function — can no longer even see it). So C-1's measured Coverage on **T-1** is already stale for every merchant on the OP-1 bypass list.
 
 | Distort control | Objective path & population | Observed/predicted route-around | Shadow attack path created | Which Sustaining (Identify-variance) control catches it? |
 |---|---|---|---|---|
@@ -186,6 +221,7 @@ Prioritized. Vetoes and Critical gaps first, then the cheap Drag to retire. Each
 | **P1** | F-4 | retune | Stand up C-7 properly: name a **SecOps triage consumer**, set a bulk-export threshold alert, and emulation-validate that the alert is actually triaged. Only then does Detect pass its test and T-3 move from `clm` to `cov`. | M. Chen |
 | **P2** | F-5 | add-sustaining-control | Extend C-6 (or add a Sustaining **Identify (variance)** control) to watch **bypass-allowlist / exception volume**, not just WAF rule mode — so the Coupling-Law decay from F-1 is caught the moment the list grows. | M. Chen |
 | **P2** | F-6 | retune | C-4 is **Undersized** for T-3's modeled app-mediated path (Drag paid, no Force there). Either strengthen coverage of that path (tokenization that survives app decryption, or C-7 done right) or de-scope C-4 to the raw-storage-theft threat it genuinely Degrades and size key-management upkeep to that — stop crediting it against app-mediated export. | R. Singh |
+| **P2** | F-7 | retune | Tighten C-5 itself: shorter cadence and scope weighted toward export-capable/high-privilege access (e.g., monthly for the support console, quarterly elsewhere) closes the entitlement-drift window in weeks instead of up to a quarter. This is a Force increase on C-5's own correctly-cast job (Structural) — it doesn't replace F-3/F-4's fix for the live-export gap, it shrinks the standing access an insider or compromised account would ever have to export with. T-3's real fix is both. | J. Okafor |
 
 *Illustrative framework touchpoints (verify before relying on them — see note below): the P0 authz control maps loosely to SOC 2 CC6.1 / PCI DSS 6.x access-control intent; the export-detection retune to CC7.2 monitoring intent.*
 
@@ -213,7 +249,7 @@ Ledgers for the two controls that drive the P0/P1 decisions — the Misfit veto 
 | Coverage | Zero on the T-3 real-time loss-event path | Distortion-pressure | None |
 | Bypass-resistance | N/A — not on the path | Sustainment | Low |
 
-- **Verdict: Miscast.** A **Sustaining · Identify (variance)** control — its real job is catching entitlement drift — offered as the answer to a Direct real-time loss event (T-3). Wrong Function for the threat; no amount of tuning fixes a kind error, so replace it as the T-3 answer (P1/F-3). It remains a perfectly good Sustaining control for its own job (entitlement-drift detection); it is simply not a T-3 loss-event control.
+- **Verdict: Miscast.** A **Sustaining · Identify(Structural) (variance)** control — its real job is catching entitlement drift — offered as the answer to a Direct real-time loss event (T-3). Wrong Function for the threat; no amount of tuning fixes a kind error, so replace it as the T-3 answer (P1/F-3). It remains a perfectly good Sustaining control for its own job (entitlement-drift detection, §6.1); it is simply not a T-3 loss-event control.
 
 ---
 

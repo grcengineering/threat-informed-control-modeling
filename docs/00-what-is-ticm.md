@@ -27,7 +27,7 @@ a verdict, so "we added a WAF" becomes something you can actually reason about.
 
 But there's a difference that matters, and it's the whole reason TICM exists.
 Threat modeling only ever tells **one story**: the attacker's. It enumerates the
-ways a control can be bypassed — the false negatives, the hostile events that
+ways a control can be bypassed — the false negatives, the harmful events that
 slip through. That's necessary and TICM keeps it. What threat modeling has *no
 axis for* is the second story: what the control does to your own organization.
 The legitimate work it blocks, the latency it adds, the teams it pushes onto
@@ -37,21 +37,40 @@ place to put them.
 
 TICM's premise is that you cannot model a control honestly without telling both
 stories at once, because the *same* enforcement boundary produces both kinds of
-error. So every control in TICM gets three lenses, always together:
+error. So every control in TICM gets four lenses, always together:
 
 - **Role** — what the control acts on: the attack graph directly (**Direct**),
   another control's reliability (**Sustaining**), or a decision
   (**Informing**). This is TICM's adoption of FAIR-CAM's control-type model, and
   it's what lets TICM cover your whole environment, not just the controls
   pointed at an attacker.
-- **Function** — what it does to the adversary. Six for Direct controls: **Deny,
-  Degrade, Detect, Deceive, Contain, Evict**. (Sustaining and Informing controls
-  use a Prevent/Identify/Correct triad instead, because their "adversary" is
-  variance or a bad decision.)
+- **Function** — what it does about the harm. Seven for Direct controls: **Deny,
+  Degrade, Detect, Deceive, Contain, Evict, Restore**. (Sustaining and Informing
+  controls use a Prevent/Identify/Correct triad instead, because their target
+  isn't an attacker — it's variance or a bad decision.)
+- **Risk Source** — *who or what causes* the harm the control addresses. TICM's
+  Function set was built from kill-chain and D3FEND, so it's easy to assume
+  every harmful crossing has an attacker behind it. Most don't.
 - **Disposition** — what it does to the *organization*, on a five-point scale
   from best to worst: **Enable, Neutral, Tax, Distort, Block**.
 
-That third lens is the one no other framework has, and it's where most of TICM's
+Take that Risk Source lens seriously for a second, because it's the reason a
+fourth axis exists at all. Consider a quarterly access recertification — the
+review that catches an employee who switched teams eighteen months ago and
+still has admin on a system they no longer touch. Model that control the way
+threat modeling models everything, and you hit a wall immediately: what
+"attack" does it stop? There isn't one. Nobody is exploiting anything. The
+control is catching **organizational drift** — entitlements silently
+diverging from the role they were meant to match, the ordinary decay of a
+system nobody is actively attacking. Force that into adversary language
+("let's emulate an attack against the access review") and you get a control
+that's *un-emulatable* by the standard you're holding it to, not because it's
+weak, but because you're testing it against the wrong kind of harm. TICM names
+the actual threat instead of defaulting to "attacker": that's what the Risk
+Source lens is for, and it's what finally makes access reviews, change-approval
+gates, and policy controls first-class citizens instead of an awkward fit.
+
+Disposition is the lens no other framework has, and it's where most of TICM's
 novelty lives. It's the organization-facing axis threat modeling never had.
 
 ## The thesis: a strong control can still be a bad control
@@ -119,10 +138,10 @@ already produces.
 
 There are two moments it earns its keep:
 
-- **Design-time.** Before you deploy a control, model its Role, tag its Function,
-  run Objective-Path Analysis to find its Disposition on each path it crosses,
-  and get a Rightsizing verdict. Catch the Distort before it ships, not after
-  the workaround appears.
+- **Design-time.** Before you deploy a control, model its Role, tag its Function
+  and the Risk Source it addresses, run Objective-Path Analysis to find its
+  Disposition on each path it crosses, and get a Rightsizing verdict. Catch the
+  Distort before it ships, not after the workaround appears.
 - **Assessment-time.** For a control already in place, TICM's Assurance spine
   asks whether it's *real*: **Designed** effectively (would the dependency graph,
   if true, close the paths?), **Implemented** effectively (is each dependency
@@ -134,8 +153,9 @@ There are two moments it earns its keep:
 
 - **[01-framework.md](./01-framework.md)** — the canonical spec. Every term
   above is defined precisely there: the Roles, the seven Functions and their
-  falsification tests, the five Dispositions, the Coupling Law, the Rightsizing
-  verdicts, and the Assurance spine. If you read one thing, read this.
+  falsification tests, the four Risk Sources, the five Dispositions, the
+  Coupling Law, the Rightsizing verdicts, and the Assurance spine. If you read
+  one thing, read this.
 - **[03-taxonomy-disposition.md](./03-taxonomy-disposition.md)** — the
   methodology for the organization-facing axis: Objective-Path Analysis, how to
   tell Tax from Distort, and how to write a Disposition finding that a business
@@ -143,11 +163,15 @@ There are two moments it earns its keep:
 - **[04-rightsizing.md](./04-rightsizing.md)** — the methodology for the verdict:
   the Force and Drag ledgers, the two hard gates, and how to reach Rightsized /
   Oversized / Undersized / Miscast from evidence.
+- **[08-risk-source.md](./08-risk-source.md)** — the deep reference for the
+  Risk Source axis: the full NIST SP 800-30 mapping and worked examples across
+  Adversarial, Accidental, Structural, and Environmental harm.
 
 TICM is honest about its seams: the Role axis is borrowed wholesale from
-FAIR-CAM, the Functions crosswalk to the kill-chain and D3FEND, and the
-Assurance triad is SOC 2's language. What's genuinely new is the Disposition
-axis, the Distort category, the Coupling Law, and the Rightsizing verdict — the
-machinery that finally makes a control's effect on the business a load-bearing
-part of the model. See **[09, in 01-framework.md](./01-framework.md)** for the
-full accounting of what's borrowed and what isn't.
+FAIR-CAM, the Functions crosswalk to the kill-chain and D3FEND, the Risk Source
+axis is borrowed wholesale from NIST SP 800-30, and the Assurance triad is
+SOC 2's language. What's genuinely new is the Disposition axis, the Distort
+category, the Coupling Law, and the Rightsizing verdict — the machinery that
+finally makes a control's effect on the business a load-bearing part of the
+model. See **[§10, in 01-framework.md](./01-framework.md)** for the full
+accounting of what's borrowed and what isn't.

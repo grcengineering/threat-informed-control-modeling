@@ -101,6 +101,20 @@ One caveat the Role never changes: the Disposition and Assurance lenses apply to
 all three Roles. A control-watching Sustaining control can itself be a Tax or a
 Distort on the ops team, and it too must be Designed, Implemented, and Operating.
 
+**Role is not Risk Source.** Both are axes layered on top of a control, which
+invites conflating them, but they answer different questions. Role (this
+section) asks *what pathway* a control acts through — the attack graph,
+another control, or a decision — and is FAIR-CAM's LEC/VMC/DSC split. Risk
+Source asks *who or what causes* the harm on that pathway — an adversary, an
+honest mistake, drift, or an outside force — and is NIST SP 800-30's taxonomy.
+They're orthogonal, and every control gets both answers. Access recertification
+is the clean example: its Role is **Sustaining** (it acts on the reliability of
+the access-provisioning control, not on an attacker), and its Risk Source is
+**Structural** (the harm it catches is entitlement drift, not an intentional
+actor). "What does it act on" and "what kind of harm is it defending against"
+are two different questions, and this control answers both without contradiction.
+Full treatment of the Risk Source axis: [`08-risk-source.md`](./08-risk-source.md).
+
 ## Why this lets you model *every* control — one WAF, three Roles
 
 Take a single WAF and watch all three Roles appear.
@@ -172,7 +186,7 @@ the parts of your program a threat model has never been able to see.
 
 Here is where the borrowed axis and TICM's own machinery lock together.
 
-The **Coupling Law** ([`01-framework.md`](./01-framework.md) §7) says a control's
+The **Coupling Law** ([`01-framework.md`](./01-framework.md) §8) says a control's
 organization-facing failure erodes its own adversary-facing Coverage: a **Distort**
 disposition drives people to route *around* the control; every workaround is a
 legitimate flow that has left the enforcement boundary; and a flow that has left

@@ -14,6 +14,7 @@
 | Title | Phishing-resistant MFA on workforce identity |
 | **Role** | **Direct** — sits on the authentication boundary, acts on the attack graph |
 | **Function tag(s)** | **Deny** (credential-theft / replay) **+ Degrade** where a non-phishing-resistant factor is the enrolled fallback |
+| **Risk Source** | **Adversarial** (default, unlabeled in the signature per notation — §5) — credential theft and replay are the threat this control addresses |
 | **Disposition(s) per objective path** | `Tax` (workforce login — passkey/SSO); `Distort` (high-tempo ops login — SMS OTP + frequent re-auth); `Distort` (contractor onboarding). **Signature slot = `Distort`** — the worst Disposition across intersected paths; the §6 per-path table is authoritative. |
 | **Rightsizing verdict** | **Rightsized** (passkey + SSO impl) vs **Misfit** (SMS-OTP + frequent-re-auth impl) — *the verdict flips on implementation* |
 | Maturity | Production |
@@ -221,13 +222,22 @@ is an exit ramp. Deploy.
 
 **Verdict — SMS OTP + 4h forced re-auth on the ops path: `Misfit`.** The Function
 *kind* is right — Deny credential theft, requiring a second factor, is the right
-kind of answer to this threat — so this is not a wrong-tool problem. What
-disqualifies it is the organization side: the **material, unmitigated Distort on
-the high-tempo ops path is a hard veto**, and a material + unmitigated Distort veto
-produces the verdict **Misfit** *regardless of how strong the Function is* (§6, the
-deploy veto). *Material* because circumvention on the ops path runs above threshold
-on a path that matters; *unmitigated* because there is no exit ramp and no
-Sustaining control catching and correcting the drift.
+kind of answer to this threat — so this is not a wrong-tool problem. The Force
+ledger above shows real degradation too (Efficacy slips to Degrade, Bypass-resistance
+weakens), not just Drag — so before calling this Misfit, apply the endogenous test
+(framework §7, hard gate 2): **does clearing the Distort restore sufficient Force?**
+Here, mostly yes. The worst failure mode — BP-5, replay of a hoarded long-lived
+session token — exists *because* the ops team hoards tokens to dodge the punishing
+re-auth cadence; it is not an independent weakness of the *second factor itself*, it
+is the Distort's own bypass. And the `Rightsized` column above proves the point
+directly: swapping to passkeys + SSO removes both the friction *and* the AiTM/SIM-swap
+exposure in the same move, because the friction was what made SMS the design choice
+in the first place. Force and Drag share a root cause here, which is the endogenous
+case, so the verdict is **Misfit**, not Undersized: the **material, unmitigated
+Distort on the high-tempo ops path is a hard veto** (framework §7, the deploy veto).
+*Material* because circumvention on the ops path runs above threshold on a path
+that matters; *unmitigated* because there is no exit ramp and no Sustaining control
+catching and correcting the drift.
 
 Note carefully what this is **not**. It is not **Miscast**: Miscast is the
 *adversary-side* kind error — the wrong Function for the threat, like trying to

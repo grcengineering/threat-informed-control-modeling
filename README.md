@@ -2,7 +2,7 @@
 
 **A modeling method for controls — the way STRIDE is a modeling method for threats.**
 
-TICM is a repeatable way to model a security control against the threats it faces *and* the business it runs inside, at the same time. Its one idea: **a control is a classifier.** It sits on a boundary and sorts crossing events into "allow" and "act on," and like any classifier it makes two errors — false negatives (hostile events it *should* have caught: the adversary's story) and false positives (legitimate events it *shouldn't* have interfered with: the business's story). Threat modeling only tells the first story; control catalogs tell neither. **TICM's premise is that you cannot model a control honestly without telling both at once** — the same boundary produces both errors, and, as the Coupling Law shows, the second manufactures the first.
+TICM is a repeatable way to model a security control against the threats it faces *and* the business it runs inside, at the same time. Its one idea: **a control is a classifier.** It sits on a boundary and sorts crossing events into "allow" and "act on," and like any classifier it makes two errors — false negatives (harmful events it *should* have caught: the risk source's story — an attacker, an honest mistake, drift, or a disaster) and false positives (legitimate events it *shouldn't* have interfered with: the business's story). Threat modeling only tells the first story, and usually only for one kind of harm; control catalogs tell neither. **TICM's premise is that you cannot model a control honestly without telling both stories, for whichever kind of harm actually applies, at once** — the same boundary produces both errors, and, as the Coupling Law shows, the second manufactures the first.
 
 ```mermaid
 flowchart LR
@@ -32,15 +32,16 @@ TICM is the method that fills those holes.
 
 ## What TICM is
 
-Three lenses, applied to every control, always together — plus a grid, a law, and a verdict.
+Four lenses, applied to every control, always together — plus a grid, a law, and a verdict.
 
 - **Role — what the control acts on.** Direct (the attack graph / the asset itself), Sustaining (another control — keeping it reliable), or Informing (a decision). This is [FAIR-CAM](https://www.fairinstitute.org/)'s control-type model, adopted wholesale and credited, and it's what lets TICM model *every* risk-mitigating control, not just the ones pointed at an attacker. → [`docs/01-framework.md#3`](docs/01-framework.md)
-- **Function — what the control does to the adversary.** For Direct controls, seven functions: **Deny · Degrade · Detect · Deceive · Contain · Evict · Restore**, each with a falsification test (an emulated attack — or, for Restore, a recovery drill under emulated destruction — that must behave a specific way or the tag is a lie). Sustaining and Informing controls use a **Prevent / Identify / Correct** triad against variance and against misaligned decisions. → [`docs/02-taxonomy-function.md`](docs/02-taxonomy-function.md)
+- **Function — what the control does about the harm.** For Direct controls, seven functions: **Deny · Degrade · Detect · Deceive · Contain · Evict · Restore**, each with a falsification test (an emulated attack — or, for Restore, a recovery drill under emulated destruction — that must behave a specific way or the tag is a lie). Sustaining and Informing controls use a **Prevent / Identify / Correct** triad against variance and against misaligned decisions. → [`docs/02-taxonomy-function.md`](docs/02-taxonomy-function.md)
+- **Risk Source — who or what causes the harm.** Function was synthesized from kill-chain and D3FEND, both adversary-only frameworks, so TICM quietly assumed every harm was an attacker. Risk Source names the assumption and breaks it open into a closed set of four, adopted from NIST SP 800-30: **Adversarial · Accidental · Structural · Environmental**. This is what finally makes governance controls first-class instead of an awkward stretch — an access-recertification control was always hard to threat-model as "defending against an attacker," but it's a clean fit once its real job is named: catching **Structural** drift (entitlements nobody removed when a role changed). Role and Risk Source stay orthogonal — Role is the pathway a control acts through, Risk Source is who or what causes the harm — so this adds no new Role and no new Function. → [`docs/01-framework.md#5`](docs/01-framework.md), [`docs/08-risk-source.md`](docs/08-risk-source.md)
 - **Disposition — what the control does to the organization.** Five categorical mechanisms, best to worst: **Enable · Neutral · Tax · Distort · Block**, assessed per named objective path and per subject population. No existing *control* framework carries this as a first-class axis — the behavior it names is well known in the usable-security literature (shadow security, the compliance budget); TICM's move is to make it a modeled, per-control taxonomy, and it's where most of TICM's novelty lives. → [`docs/03-taxonomy-disposition.md`](docs/03-taxonomy-disposition.md)
 
 **The Grid.** Function and Disposition form a grid, and a control's position on it is its signature — *"MFA is a **Direct Deny/Tax** control"*, *"a blocking WAF rule with no exception process is **Direct Deny/Distort**."* The **Enable** column is where good GRC engineering lives (real mitigation that also advances an objective). The **Distort** column is the trap the rest of the field can't see: strong against the adversary, but it pushes people off the sanctioned path — often *worse* than Block because it's invisible.
 
-**The Coupling Law.** TICM's signature claim: **Distortion decays Coverage.** Every workaround is a legitimate flow that has left the enforcement boundary — invisible to the control (where it carries a Detect function), now outside the control's boundary, unmanaged by it, and unknown until the paths are re-enumerated. A control's organization-facing failure directly erodes its own adversary-facing coverage. Friction converts into attack surface. No prior framework models this loop as a per-control, generative property; TICM puts it at the center. → [`docs/01-framework.md#7`](docs/01-framework.md)
+**The Coupling Law.** TICM's signature claim: **Distortion decays Coverage.** Every workaround is a legitimate flow that has left the enforcement boundary — invisible to the control (where it carries a Detect function), now outside the control's boundary, unmanaged by it, and unknown until the paths are re-enumerated. A control's organization-facing failure directly erodes its own adversary-facing coverage. Friction converts into attack surface. No prior framework models this loop as a per-control, generative property; TICM puts it at the center. → [`docs/01-framework.md#8`](docs/01-framework.md)
 
 **Rightsizing.** Categorizing a control is half the job; *qualifying* it is the other half. TICM weighs a **Force** ledger (Efficacy, Coverage, Bypass-resistance) against a **Drag** ledger (Friction, Distortion-pressure, Sustainment) and returns one of five verdicts — **Rightsized · Oversized · Undersized · Miscast · Misfit** — with two hard gates: no exit ramp (Tunability), no deploy; and a material, unmitigated Distort or Block on a critical objective path is a veto that lands the control at **Misfit**, however strong the Function. Miscast and Misfit are the matched pair — wrong tool for the threat vs. right tool whose Drag disqualifies it — that make "a strong control can still be a bad control" a decision you can defend. → [`docs/04-rightsizing.md`](docs/04-rightsizing.md)
 
@@ -64,17 +65,18 @@ threat-informed-control-modeling/
 ├── README.md            You are here — the front door
 ├── LICENSE
 ├── docs/                The canonical framework specification
-│   ├── 01-framework.md          Single source of truth: the three lenses, Grid, Coupling Law, Rightsizing, Assurance
+│   ├── 01-framework.md          Single source of truth: the four lenses, Grid, Coupling Law, Rightsizing, Assurance
 │   ├── 02-taxonomy-function.md  The seven Functions + the Prevent/Identify/Correct triads, with falsification tests
 │   ├── 03-taxonomy-disposition.md  The five Dispositions and Objective-Path Analysis
 │   ├── 04-rightsizing.md         The Force/Drag ledger, the five verdicts, and the two hard gates
 │   ├── 05-assurance-spine.md     Designed / Implemented / Operating and the control-bypass threat model
 │   ├── 06-prior-art.md           Point-by-point differentiation from STRIDE, D3FEND, kill-chain, FAIR-CAM, catalogs
-│   └── 07-control-roles-faircam.md  The full FAIR-CAM Role mapping and citations
+│   ├── 07-control-roles-faircam.md  The full FAIR-CAM Role mapping and citations
+│   └── 08-risk-source.md         The full NIST SP 800-30 Risk Source mapping and worked examples across all four sources
 ├── methodology/         How to run each mode step by step (Proactive authoring, Reactive assessment)
 ├── templates/           The control-modeling document template (front matter → dependency schema → mappings)
 ├── examples/
-│   ├── controls/        Worked reusable control models (Proactive mode output)
+│   ├── controls/        Worked reusable control models (Proactive mode output), incl. iam.access-recertification.01.md (Sustaining · Identify(Structural))
 │   └── assessments/     Worked system/project assessments (Reactive mode output)
 └── skills/              Agent-ready SKILL.md files for both modes
     ├── ticm-control-modeling/   Proactive: author a reusable control model

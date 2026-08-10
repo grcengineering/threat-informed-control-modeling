@@ -5,12 +5,14 @@
 > function gets the room to be usable on a Monday. Where the two disagree, the
 > framework wins.
 
-The Function axis answers one question: **what does this control do to the
-adversary?** Not where it sits, not what it costs the business — those are the
-Role axis ([`07-control-roles-faircam.md`](./07-control-roles-faircam.md)) and the
+The Function axis answers one question: **what does this control do about the
+harm** — deny it, degrade it, catch it, contain it? Not where it sits, not what it
+costs the business — those are the Role axis
+([`07-control-roles-faircam.md`](./07-control-roles-faircam.md)) and the
 Disposition axis ([`03-taxonomy-disposition.md`](./03-taxonomy-disposition.md)).
-Function is the adversary-facing story: the false negatives, the bypasses, the
-crossings the control is supposed to catch.
+Function is the harm-facing story: the false negatives, the bypasses, the
+crossings the control is supposed to catch — against whichever Risk Source
+actually applies, adversary or otherwise.
 
 For **Direct** controls — the ones that sit on the attack graph itself — there are
 seven functions. TICM does not claim them as novel; they are a synthesis of the
@@ -20,9 +22,13 @@ ATT&CK/D3FEND rather than fork them. They also map cleanly onto FAIR-CAM's
 Loss-Event-Control sub-functions — **Prevention** (Deny/Degrade/Deceive),
 **Detection** (Detect), and **Response** (Contain/Evict/Restore) — so the set spans
 the whole loss-event lifecycle, not prevention alone. Every function is pinned by
-three things: the change it makes to the adversary's (or loss-event) state, the
-**single variable** it moves, and a **falsification test** — usually an emulated
-attack that must behave a specific way, or the tag is a lie.
+three things: the change it makes to the harmful event's trajectory, the
+**single variable** it moves, and a **falsification test** that must behave a
+specific way, or the tag is a lie. Adversarial has been TICM's implicit default
+from the start, so that test is usually an emulated attack — but the evidence
+type actually follows the Risk Source behind the harm, not the Function tag
+itself (see below, and [`08-risk-source.md`](./08-risk-source.md), for the other
+three).
 
 ## The seven Direct functions on an intrusion timeline
 
@@ -61,6 +67,42 @@ an intrusion, from the first recon packet through the cleanup after.
 
 ---
 
+## Function is agnostic to Risk Source
+
+Every function above is written adversary-first — "the adversary's map," "an
+emulated attempt," a "blast radius" measured from a foothold — because Deny
+through Restore were synthesized from the kill-chain and D3FEND, and both are
+adversary-only vocabularies. But look at what each Function actually moves (the
+bound variable in its own definition below) and none of the seven mechanically
+require intent on the other end. Deny drives `P(success | attempt)` to zero for
+an edge, whether the thing attempting the edge is an exploit or a fat-fingered
+`DROP TABLE`. Contain bounds a blast radius whether the foothold is a stolen
+credential or a misconfigured deploy that over-granted access. Restore shrinks
+loss magnitude whether the loss event was ransomware or a burst pipe. The
+mechanism doesn't ask who or what is on the other side of the boundary — that
+question belongs to a different axis entirely.
+
+That axis is **Risk Source** ([`01-framework.md`](./01-framework.md) §5):
+Adversarial, Accidental, Structural, Environmental. Function and Risk Source
+combine freely — a control's signature can carry one Function tag against more
+than one Risk Source at once — and several of the write-ups below now carry a
+second, non-adversarial example alongside the original adversarial one to make
+that concrete. (Deceive is the one function where this is genuinely harder:
+corrupting a *belief* about the graph needs something on the other end capable
+of holding a false belief, which keeps it closer to Adversarial in practice even
+though nothing in the taxonomy formally excludes another source.)
+
+What *does* follow Risk Source is the falsification test's evidence type, not
+the Function tag: an Adversarial claim is validated by emulated attack,
+Accidental by an injected-error scenario, Structural by an injected-drift
+scenario, Environmental by a DR/continuity drill. A control that "can't be
+adversary-emulated" usually isn't a gap in your test rig — it's a control whose
+real Risk Source was never Adversarial to begin with. Full treatment, with
+worked examples across all four Risk Sources, lives in
+[`08-risk-source.md`](./08-risk-source.md).
+
+---
+
 ## Deny
 
 **Definition.** Deny removes an attack-graph edge, or makes a technique's
@@ -76,7 +118,9 @@ wanted is gone.
 **Examples.** Disabling legacy SMBv1 so the EternalBlue edge is unsatisfiable.
 Phishing-resistant hardware MFA that makes credential-replay against a login
 impossible, not merely expensive. Removing a public S3 bucket ACL so anonymous
-read is off the graph entirely.
+read is off the graph entirely. Off the adversary axis: a database constraint
+that rejects any query with no `WHERE` clause makes the accidental
+mass-deletion edge just as unsatisfiable (Accidental).
 
 **What this is NOT — Deny vs Degrade.** This is the boundary practitioners get
 wrong most. If a motivated adversary can still traverse the edge at higher cost,
@@ -107,7 +151,9 @@ removing it. The path still exists; it just got more expensive to walk.
 **Examples.** Rate-limiting and account lockout on an auth endpoint. Network
 segmentation that forces an attacker through extra pivots to reach a target.
 Expensive password hashing (Argon2) that turns a minutes-long crack into a
-months-long one.
+months-long one. The same rate limiter degrades a misconfigured internal
+client's retry storm exactly as it degrades credential stuffing — throttled and
+backed off instead of taking the service down (Accidental).
 
 **What this is NOT — Degrade vs Deny.** See above — the mirror of the Deny
 boundary. Degrade is the honest tag for most "hardening" that doesn't actually
@@ -134,7 +180,10 @@ responder.** Observability alone is not Detect.
 
 **Examples.** EDR behavioral alerting on process-injection, routed to a SOC that
 works the ticket. Impossible-travel sign-in alerts wired to an on-call identity
-responder. Canary-token trip that pages a named team.
+responder. Canary-token trip that pages a named team. A DLP rule that fires when
+a file of customer records is emailed outside the company, routed to a privacy
+officer, detects the crossing whether the sender is an exfil script or an
+employee who mis-sent a file (Accidental).
 
 **What this is NOT — Detect vs Deny.** A sensor that *also* blocks carries **two**
 tags — Deny + Detect — not one. And the harder rule: **a detection nobody triages
@@ -187,7 +236,9 @@ stop the adversary getting in — it caps how far in "in" goes.
 
 **Examples.** Microsegmentation that stops east-west movement from a compromised
 workload. Per-service IAM roles scoped so a stolen token can't pivot. Container
-runtime isolation that traps an escape attempt in a namespace.
+runtime isolation that traps an escape attempt in a namespace. The same
+per-service scoping bounds the blast radius of a misconfigured deploy that
+over-grants a service's own access, not just a stolen token (Accidental).
 
 **What this is NOT — Contain vs Deny.** Contain acts *post-compromise*; Deny acts
 on the edge *before* it's crossed. Same segmentation firewall can be either
@@ -214,7 +265,10 @@ persistence; now they don't.
 **Examples.** Killing malicious scheduled tasks and rotating the credentials they
 depended on. Revoking and reissuing every token after a service-account
 compromise. Reimaging a host and confirming the persistence mechanism doesn't
-survive the rebuild.
+survive the rebuild. Deprovisioning a service account left active after its
+owning team was reorganized away is the same Evict move against occupancy
+nobody planted maliciously — entitlements that drifted out of role and were
+never removed (Structural).
 
 **What this is NOT — Evict vs Restore.** Evict removes the *adversary*; Restore
 returns the asset or service to *known-good* and shrinks what the incident cost.
@@ -249,7 +303,9 @@ incident cost less — the service back up, the data back, the outage bounded.
 **Examples.** Immutable, tested backups with a documented and rehearsed restore
 runbook. Disaster-recovery failover to a warm standby region. The restoration tail
 of incident response — rebuilding hosts, re-imaging, replaying clean data — once the
-adversary has been evicted.
+adversary has been evicted. The same warm-standby failover recovers a service
+after a datacenter fire exactly as it would after ransomware — the runbook
+doesn't know which one happened (Environmental).
 
 **What this is NOT — Restore vs Evict.** The mirror of the Evict boundary above.
 Evict removes the adversary's *presence*; Restore returns the asset or service to
@@ -351,7 +407,7 @@ failure of *another* control. Its three functions:
 config-drift detection and periodic control testing (Identify); IaC reconciliation
 that reverts a rule to its declared state (Correct). The WAF that gets silently
 flipped to monitor-only is caught by a Sustaining **Identify** control — and per
-the Coupling Law ([`01-framework.md`](./01-framework.md) §7), that's the very same
+the Coupling Law ([`01-framework.md`](./01-framework.md) §8), that's the very same
 machinery that catches Distortion-driven coverage decay, because Distortion is a
 variance event.
 
@@ -383,15 +439,20 @@ WAF rule is **Deny + Detect**, and you write both. The value of the tag isn't th
 label; it's the falsification test behind it. A Function tag you haven't validated
 is a claim, not a finding.
 
-**Emulation is the gold standard, not a precondition.** Where you can emulate the
-attack, do — an emulated exploit is the strongest evidence a tag is real. But some
-controls' tests *can't* be adversary-emulated: administrative and procedural
-controls (background checks, segregation-of-duties, vendor security clauses) and
-most Informing controls. For those, Efficacy is carried by an **alternate-evidence
-tier** — a process audit, historical base-rate data, or a design-review against the
-control's dependency graph — and the tag is **not** auto-scored 0 for "never
-emulated." The full tiering rubric lives in
-[`04-rightsizing.md`](./04-rightsizing.md).
+**Emulation is the gold standard for Adversarial claims, not a universal
+precondition.** Where the Risk Source is Adversarial and you can emulate the
+attack, do — an emulated exploit is the strongest evidence a tag is real. But
+some controls' tests *can't* be adversary-emulated: administrative and
+procedural controls (background checks, segregation-of-duties, vendor security
+clauses) and most Informing controls. Often that's not a gap in your test rig —
+it's that the control's real Risk Source was never Adversarial to begin with,
+and the honest evidence is an injected-error, injected-drift, or
+disaster-recovery drill instead (see [`08-risk-source.md`](./08-risk-source.md)).
+Where a control is genuinely Adversarial-only and still can't be emulated,
+Efficacy is carried by an **alternate-evidence tier** — a process audit,
+historical base-rate data, or a design-review against the control's dependency
+graph — and the tag is **not** auto-scored 0 for "never emulated." The full
+tiering rubric lives in [`04-rightsizing.md`](./04-rightsizing.md).
 
 When you fill in §4 of the control template, every tag you assert should point at
 the specific evidence that proved it — an emulated attack where you can run one, an

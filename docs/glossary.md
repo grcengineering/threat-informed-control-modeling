@@ -7,6 +7,16 @@ full treatment — and above all [`01-framework.md`](./01-framework.md) — wins
 
 ---
 
+**Accidental (risk source)** — An authorized person making an honest mistake,
+not an attacker: an admin fat-fingering a config, an employee misdirecting a
+file. Falsified with an injected-error scenario, not an emulated attack. See
+[`01-framework.md`](./01-framework.md) §5 and [`08-risk-source.md`](./08-risk-source.md).
+
+**Adversarial (risk source)** — An intentional actor exploiting a vulnerability
+for gain — TICM's original Risk Source, and the one that stays unlabeled in a
+control's signature by default. Falsified with an emulated attack. See
+[`01-framework.md`](./01-framework.md) §5 and [`08-risk-source.md`](./08-risk-source.md).
+
 **Assurance spine** — The three-tier test of whether a control is *real*:
 Designed, Implemented, Operating effectively. Borrowed openly from the auditor's
 triad (SOC 2 language). See [`05-assurance-spine.md`](./05-assurance-spine.md).
@@ -39,7 +49,7 @@ FAIR-CAM integration. See [`07-control-roles-faircam.md`](./07-control-roles-fai
 
 **Coupling Law** — TICM's signature claim: *Distortion decays Coverage.* A
 false positive severe enough to provoke a workaround removes that flow from the
-boundary, converting friction into unmanaged attack surface. See [`01-framework.md`](./01-framework.md) §7.
+boundary, converting friction into unmanaged attack surface. See [`01-framework.md`](./01-framework.md) §8.
 
 **Coverage** — A Force dimension: the fraction of modeled attack paths this
 control actually sits on. For a Sustaining control, measured against the variance
@@ -89,6 +99,10 @@ falsification test under adversary emulation. See [`04-rightsizing.md`](./04-rig
 the Assure and Resilience subtypes). Restoring service after Evict lives here.
 See [`03-taxonomy-disposition.md`](./03-taxonomy-disposition.md).
 
+**Environmental (risk source)** — Forces outside anyone's control — fire,
+flood, power failure, regional outage. Falsified with a DR/continuity drill.
+See [`01-framework.md`](./01-framework.md) §5 and [`08-risk-source.md`](./08-risk-source.md).
+
 **Evict** — A Direct Function that removes established adversary occupancy;
 post-eviction persistence re-checks must fail. Not Recover (that's Enable). See [`02-taxonomy-function.md`](./02-taxonomy-function.md).
 
@@ -137,9 +151,20 @@ shapes decisions toward alignment (Informing). See [`07-control-roles-faircam.md
 Drag ledger to produce one of four verdicts — the step that cashes out "a strong
 control can still be a bad control." See [`04-rightsizing.md`](./04-rightsizing.md).
 
+**Risk Source** — The fourth TICM lens: what kind of harm a control addresses —
+Adversarial, Accidental, Structural, or Environmental — orthogonal to Role and
+Function. Adopted from NIST SP 800-30's threat-source taxonomy. See
+[`01-framework.md`](./01-framework.md) §5 and [`08-risk-source.md`](./08-risk-source.md).
+
 **Signature** — A control's full identity: its Role, one or more Function tags,
 and exactly one Disposition per objective path it touches (e.g. "Direct
 Deny/Tax"). See [`01-framework.md`](./01-framework.md) §2.
+
+**Structural (risk source)** — A system, technical or organizational, drifting
+or degrading on its own over time: entitlements drifting from role as people
+change jobs, hardware and software aging. Falsified with an injected-drift
+scenario; it is what "variance" in a Sustaining control (§3) actually names.
+See [`01-framework.md`](./01-framework.md) §5 and [`08-risk-source.md`](./08-risk-source.md).
 
 **Sustaining control** — A control acting on *another control* — keeping it
 reliable by catching and correcting its degradation. FAIR-CAM's Variance
